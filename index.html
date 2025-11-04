@@ -1,0 +1,2505 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    
+    <title>ArchaeoVision | Plataforma Profissional de Arqueologia Digital</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.3/dist/leaflet.css" />
+    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;700&family=Raleway:wght@300;400;600&display=swap" rel="stylesheet">
+    <style>
+        /* Reset e estilos base */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Raleway', sans-serif;
+            line-height: 1.6;
+            color: #333;
+            background-color: #f8f9fa;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 20px;
+        }
+
+        /* Header */
+        header {
+            background: #2c5530;
+            color: white;
+            padding: 1rem 0;
+            position: fixed;
+            width: 100%;
+            top: 0;
+            z-index: 1000;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+
+        .header-container {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .logo {
+            display: flex;
+            align-items: center;
+            text-decoration: none;
+            color: white;
+        }
+
+        .logo img {
+            height: 40px;
+            margin-right: 10px;
+            border-radius: 5px;
+        }
+
+        .logo-text {
+            font-family: 'Playfair Display', serif;
+            font-size: 1.5rem;
+            font-weight: 700;
+        }
+
+        .logo-text span {
+            color: #d4af37;
+        }
+
+        nav ul {
+            display: flex;
+            list-style: none;
+            gap: 2rem;
+            align-items: center;
+        }
+
+        nav a {
+            color: white;
+            text-decoration: none;
+            font-weight: 600;
+            transition: color 0.3s ease;
+        }
+
+        nav a:hover {
+            color: #d4af37;
+        }
+
+        .cta-button {
+            background: #d4af37;
+            color: #2c5530;
+            padding: 0.5rem 1.5rem;
+            border-radius: 25px;
+            font-weight: 700;
+            transition: all 0.3s ease;
+        }
+
+        .cta-button:hover {
+            background: #b8941f;
+            transform: translateY(-2px);
+        }
+
+        /* Botão Adicionar */
+        .add-btn {
+            background: #28a745;
+            color: white;
+            border: none;
+            padding: 0.5rem 1.5rem;
+            border-radius: 25px;
+            font-weight: 700;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .add-btn:hover {
+            background: #218838;
+            transform: translateY(-2px);
+        }
+
+        /* Botão Logout */
+        .logout-btn {
+            background: #dc3545;
+            color: white;
+            border: none;
+            padding: 0.3rem 1rem;
+            border-radius: 20px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-size: 0.9rem;
+        }
+
+        .logout-btn:hover {
+            background: #c82333;
+            transform: translateY(-2px);
+        }
+
+        /* Hero Section */
+        .hero {
+            background: linear-gradient(rgba(44, 85, 48, 0.8), rgba(44, 85, 48, 0.9)), url('fotos/hero-bg.jpg');
+            background-size: cover;
+            background-position: center;
+            color: white;
+            padding: 180px 0 100px;
+            text-align: center;
+        }
+
+        .hero-content h1 {
+            font-family: 'Playfair Display', serif;
+            font-size: 3.5rem;
+            margin-bottom: 1.5rem;
+            font-weight: 700;
+        }
+
+        .hero-content p {
+            font-size: 1.3rem;
+            margin-bottom: 2.5rem;
+            max-width: 700px;
+            margin-left: auto;
+            margin-right: auto;
+        }
+
+        .hero-buttons {
+            display: flex;
+            gap: 1rem;
+            justify-content: center;
+        }
+
+        .btn {
+            padding: 12px 30px;
+            border: none;
+            border-radius: 5px;
+            font-size: 1.1rem;
+            font-weight: 600;
+            text-decoration: none;
+            transition: all 0.3s ease;
+            cursor: pointer;
+        }
+
+        .btn-primary {
+            background: #d4af37;
+            color: #2c5530;
+        }
+
+        .btn-primary:hover {
+            background: #b8941f;
+            transform: translateY(-2px);
+        }
+
+        .btn-secondary {
+            background: transparent;
+            color: white;
+            border: 2px solid white;
+        }
+
+        .btn-secondary:hover {
+            background: white;
+            color: #2c5530;
+        }
+
+        /* Seção Saiba Mais */
+        .saiba-mais-sobre {
+            padding: 80px 0;
+            background: white;
+        }
+
+        .saiba-mais-sobre h1 {
+            font-family: 'Playfair Display', serif;
+            color: #2c5530;
+            font-size: 2.5rem;
+            margin-bottom: 2rem;
+            text-align: center;
+        }
+
+        .saiba-mais-sobre p {
+            font-size: 1.2rem;
+            line-height: 1.8;
+            max-width: 800px;
+            margin: 0 auto;
+            text-align: center;
+            color: #666;
+        }
+
+        /* Seção do Mapa */
+        .map-section {
+            padding: 80px 0;
+            background: #f8f9fa;
+        }
+
+        .section-header {
+            text-align: center;
+            margin-bottom: 3rem;
+        }
+
+        .section-title {
+            font-family: 'Playfair Display', serif;
+            color: #2c5530;
+            font-size: 2.5rem;
+            margin-bottom: 1rem;
+        }
+
+        .section-subtitle {
+            font-size: 1.2rem;
+            color: #666;
+            max-width: 600px;
+            margin: 0 auto;
+        }
+
+        .map-container {
+            position: relative;
+            height: 600px;
+            border-radius: 10px;
+            overflow: hidden;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+        }
+
+        #archaeologicalMap {
+            height: 100%;
+            width: 100%;
+        }
+
+        /* Filtros do Mapa */
+        .map-filters {
+            position: absolute;
+            top: 20px;
+            left: 20px;
+            background: white;
+            border-radius: 10px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+            z-index: 1000;
+            min-width: 200px;
+            padding: 15px;
+        }
+
+        .filter-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
+            border-bottom: 1px solid #eee;
+            padding-bottom: 10px;
+        }
+
+        .filter-header h3 {
+            color: #2c5530;
+            font-size: 1rem;
+            margin: 0;
+        }
+
+        .filter-group {
+            margin-bottom: 15px;
+        }
+
+        .filter-group label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 600;
+            color: #333;
+            font-size: 0.9rem;
+        }
+
+        .filter-group select {
+            width: 100%;
+            padding: 8px 10px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            font-size: 14px;
+            font-family: 'Raleway', sans-serif;
+        }
+
+        .filter-actions {
+            display: flex;
+            gap: 10px;
+            margin-top: 15px;
+        }
+
+        .filter-btn {
+            flex: 1;
+            padding: 8px 12px;
+            border: 1px solid #2c5530;
+            background: #2c5530;
+            color: white;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 14px;
+            transition: all 0.3s ease;
+        }
+
+        .filter-btn:hover {
+            background: #1e3a22;
+        }
+
+        .filter-btn.secondary {
+            background: transparent;
+            color: #2c5530;
+        }
+
+        .filter-btn.secondary:hover {
+            background: #2c5530;
+            color: white;
+        }
+
+        .map-overlay {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            background: white;
+            border-radius: 10px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+            z-index: 1000;
+            min-width: 200px;
+        }
+
+        .legend-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 15px;
+            border-bottom: 1px solid #eee;
+        }
+
+        .legend-header h3 {
+            color: #2c5530;
+            font-size: 1rem;
+            margin: 0;
+        }
+
+        .toggle-button {
+            background: none;
+            border: none;
+            font-size: 1.2rem;
+            cursor: pointer;
+            color: #666;
+        }
+
+        .map-legend {
+            padding: 15px;
+        }
+
+        .legend-item {
+            display: flex;
+            align-items: center;
+            margin-bottom: 10px;
+        }
+
+        .legend-color {
+            width: 20px;
+            height: 20px;
+            border-radius: 50%;
+            margin-right: 10px;
+            border: 2px solid white;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+        }
+
+        /* Modal de Adicionar */
+        .add-modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0,0,0,0.7);
+            z-index: 10000;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .add-modal.active {
+            display: flex;
+        }
+
+        .modal-content {
+            background: white;
+            padding: 30px;
+            border-radius: 10px;
+            width: 90%;
+            max-width: 800px;
+            max-height: 90vh;
+            overflow-y: auto;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+        }
+
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+            border-bottom: 1px solid #eee;
+            padding-bottom: 15px;
+        }
+
+        .modal-header h2 {
+            margin: 0;
+            color: #2c5530;
+            font-size: 1.5rem;
+        }
+
+        .close-modal {
+            background: none;
+            border: none;
+            font-size: 24px;
+            cursor: pointer;
+            color: #666;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 600;
+            color: #333;
+        }
+
+        .form-group input,
+        .form-group select,
+        .form-group textarea {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            font-size: 16px;
+            font-family: 'Raleway', sans-serif;
+        }
+
+        .form-group textarea {
+            height: 80px;
+            resize: vertical;
+        }
+
+        .form-row {
+            display: flex;
+            gap: 15px;
+        }
+
+        .form-row .form-group {
+            flex: 1;
+        }
+
+        .form-actions {
+            display: flex;
+            gap: 10px;
+            justify-content: flex-end;
+            margin-top: 25px;
+        }
+
+        /* Mapa dentro do modal */
+        .modal-map-container {
+            height: 300px;
+            border-radius: 8px;
+            overflow: hidden;
+            margin-bottom: 15px;
+            border: 2px solid #ddd;
+        }
+
+        #modalMap {
+            height: 100%;
+            width: 100%;
+        }
+
+        .coordinates-input {
+            display: flex;
+            gap: 10px;
+            margin-top: 10px;
+        }
+
+        .coordinates-input input {
+            flex: 1;
+        }
+
+        .map-controls {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 10px;
+        }
+
+        .map-controls button {
+            flex: 1;
+            padding: 8px 12px;
+            border: 1px solid #ddd;
+            background: #f8f9fa;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 14px;
+        }
+
+        .map-controls button:hover {
+            background: #e9ecef;
+        }
+
+        .coordinates-info {
+            background: #e9ecef;
+            padding: 10px;
+            border-radius: 5px;
+            margin-top: 10px;
+            font-size: 14px;
+            text-align: center;
+        }
+
+        /* Estilos para upload de arquivo */
+        .upload-options {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 15px;
+        }
+
+        .upload-option {
+            flex: 1;
+            text-align: center;
+            padding: 10px;
+            background: #f8f9fa;
+            border: 2px solid #ddd;
+            border-radius: 6px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-weight: 600;
+        }
+
+        .upload-option.active {
+            background: #2c5530;
+            color: white;
+            border-color: #2c5530;
+        }
+
+        .file-upload-container {
+            margin-bottom: 15px;
+        }
+
+        .file-input-wrapper {
+            position: relative;
+            display: inline-block;
+            width: 100%;
+        }
+
+        .file-input {
+            position: absolute;
+            left: -9999px;
+        }
+
+        .file-input-button {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            padding: 12px 20px;
+            background: #f8f9fa;
+            border: 2px dashed #ddd;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            width: 100%;
+            color: #666;
+        }
+
+        .file-input-button:hover {
+            background: #e9ecef;
+            border-color: #2c5530;
+        }
+
+        .file-name {
+            margin-top: 8px;
+            font-size: 0.9rem;
+            color: #666;
+            text-align: center;
+        }
+
+        .image-preview {
+            max-width: 100%;
+            max-height: 200px;
+            margin-top: 15px;
+            border-radius: 8px;
+            border: 2px solid #ddd;
+            display: none;
+        }
+
+        /* Estilos para os marcadores do mapa */
+        .site-marker {
+            text-align: center;
+        }
+
+        .marker-pin {
+            width: 30px;
+            height: 30px;
+            border-radius: 50% 50% 50% 0;
+            background: #2c5530;
+            position: absolute;
+            transform: rotate(-45deg);
+            left: 50%;
+            top: 50%;
+            margin: -15px 0 0 -15px;
+        }
+
+        .site-marker i {
+            position: absolute;
+            width: 24px;
+            font-size: 18px;
+            left: 50%;
+            top: 50%;
+            transform: translate(-50%, -50%);
+            color: white;
+        }
+
+        .selection-marker .marker-pin {
+            background: #28a745;
+            border: 3px solid #fff;
+            box-shadow: 0 0 10px rgba(40, 167, 69, 0.5);
+        }
+
+        /* Botão no popup */
+        .site-link-button {
+            background: #2c5530;
+            color: white;
+            border: none;
+            padding: 8px 15px;
+            border-radius: 4px;
+            cursor: pointer;
+            margin-top: 10px;
+            width: 100%;
+            font-family: 'Raleway', sans-serif;
+        }
+
+        .site-link-button:hover {
+            background: #1e3a22;
+        }
+
+        /* Popup do mapa */
+        .map-popup {
+            max-width: 300px;
+        }
+
+        .map-popup h2 {
+            color: #2c5530;
+            margin-bottom: 10px;
+            font-size: 1.3rem;
+            font-family: 'Playfair Display', serif;
+        }
+
+        .map-popup img {
+            width: 100%;
+            height: 150px;
+            object-fit: cover;
+            border-radius: 5px;
+            margin-bottom: 10px;
+        }
+
+        .popup-meta p {
+            margin-bottom: 5px;
+            font-size: 0.9rem;
+            line-height: 1.4;
+        }
+
+        /* Seções adicionais */
+        .features-section, .stratigraphy-section, .data-section, .cta-section {
+            padding: 80px 0;
+        }
+
+        .features-section {
+            background: white;
+        }
+
+        .features-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 2rem;
+        }
+
+        .feature-card {
+            background: #f8f9fa;
+            padding: 2rem;
+            border-radius: 10px;
+            text-align: center;
+            transition: transform 0.3s ease;
+        }
+
+        .feature-card:hover {
+            transform: translateY(-5px);
+        }
+
+        .feature-icon {
+            font-size: 3rem;
+            color: #2c5530;
+            margin-bottom: 1rem;
+        }
+
+        .feature-card h3 {
+            color: #2c5530;
+            margin-bottom: 1rem;
+            font-family: 'Playfair Display', serif;
+        }
+
+        .feature-card p {
+            color: #666;
+            margin-bottom: 1rem;
+        }
+
+        .feature-link {
+            color: #2c5530;
+            text-decoration: none;
+            font-weight: 600;
+        }
+
+        .cta-section {
+            background: linear-gradient(135deg, #2c5530, #1e3a22);
+            color: white;
+            text-align: center;
+        }
+
+        /* Footer */
+        footer {
+            background: #1a1a1a;
+            color: white;
+            padding: 50px 0 20px;
+        }
+
+        .footer-content {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 2rem;
+            margin-bottom: 2rem;
+        }
+
+        .footer-column h3 {
+            color: #d4af37;
+            margin-bottom: 1rem;
+            font-family: 'Playfair Display', serif;
+        }
+
+        .footer-column ul {
+            list-style: none;
+        }
+
+        .footer-column ul li {
+            margin-bottom: 0.5rem;
+        }
+
+        .footer-column a {
+            color: #ccc;
+            text-decoration: none;
+            transition: color 0.3s ease;
+        }
+
+        .footer-column a:hover {
+            color: #d4af37;
+        }
+
+        .footer-social {
+            display: flex;
+            gap: 1rem;
+            margin-top: 1rem;
+        }
+
+        .footer-social a {
+            color: white;
+            font-size: 1.2rem;
+        }
+
+        .footer-bottom {
+            text-align: center;
+            padding-top: 2rem;
+            border-top: 1px solid #333;
+            color: #999;
+        }
+
+        /* Responsividade */
+        @media (max-width: 768px) {
+            .header-container {
+                flex-direction: column;
+                gap: 1rem;
+            }
+
+            nav ul {
+                flex-wrap: wrap;
+                justify-content: center;
+                gap: 1rem;
+            }
+
+            .hero-content h1 {
+                font-size: 2.5rem;
+            }
+
+            .hero-buttons {
+                flex-direction: column;
+                align-items: center;
+            }
+
+            .map-overlay, .map-filters {
+                position: relative;
+                top: auto;
+                right: auto;
+                left: auto;
+                margin-bottom: 20px;
+                width: 90%;
+            }
+
+            .modal-content {
+                width: 95%;
+                margin: 20px;
+                padding: 20px;
+            }
+
+            .form-row {
+                flex-direction: column;
+                gap: 0;
+            }
+
+            .coordinates-input {
+                flex-direction: column;
+            }
+
+            .upload-options {
+                flex-direction: column;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Header -->
+    <header>
+        <div class="container header-container">
+            <a class="logo">
+                <img src="fotos/b920f10b-c8ff-4e69-aeaf-515171ddf4ec.jpg" alt="Archaeology World Logo">
+                <div class="logo-text">Archaeology <span>World</span></div>
+            </a>
+            <nav>
+                <ul>
+                    <li><a href="#sobre">saiba mais sobre</a></li>
+                    <li><a href="#map">Mapa Interativo</a></li>
+                    <li><a href="#features">Recursos</a></li>
+                    <li><a href="#stratigraphy">Estratigrafia</a></li>
+                    <li><a href="#data">Análises</a></li>
+                    <li id="addButtonContainer">
+                        <!-- Será preenchido dinamicamente via JavaScript -->
+                    </li>
+                    <li id="loginButtonContainer">
+                        <!-- Será preenchido dinamicamente via JavaScript -->
+                    </li>
+                </ul>
+            </nav>
+        </div>
+    </header>
+
+    <!-- Modal para Adicionar Novo Item -->
+    <div id="addModal" class="add-modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>Adicionar Novo Sítio/Descoberta</h2>
+                <button class="close-modal" onclick="closeAddModal()">&times;</button>
+            </div>
+            
+            <form id="addForm">
+                <div class="form-group">
+                    <label for="itemName">Nome do Local/Descoberta *</label>
+                    <input type="text" id="itemName" name="itemName" required placeholder="Ex: Sítio Arqueológico do Sol">
+                </div>
+
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="itemType">Tipo *</label>
+                        <select id="itemType" name="itemType" required>
+                            <option value="">Selecione o tipo</option>
+                            <option value="Sítio em Escavação">Sítio em Escavação</option>
+                            <option value="Sítio Documentado">Sítio Documentado</option>
+                            <option value="Área Protegida">Área Protegida</option>
+                            <option value="Artefato Registrado">Artefato Registrado</option>
+                            <option value="Estrutura Arqueológica">Estrutura Arqueológica</option>
+                            <option value="Museus Arqueológicos">Museu Arqueológico</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label for="itemPeriod">Período *</label>
+                        <input type="text" id="itemPeriod" name="itemPeriod" required placeholder="Ex: Holoceno Inicial">
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label>Localização *</label>
+                    <div class="map-controls">
+                        <button type="button" onclick="enableMapSelection()">
+                            <i class="fas fa-mouse-pointer"></i> Clicar no Mapa
+                        </button>
+                        <button type="button" onclick="useCurrentLocation()">
+                            <i class="fas fa-location-arrow"></i> Minha Localização
+                        </button>
+                    </div>
+                    
+                    <div class="modal-map-container">
+                        <div id="modalMap"></div>
+                    </div>
+                    
+                    <div class="coordinates-info" id="coordinatesInfo">
+                        Clique em "Clicar no Mapa" e depois clique no mapa para selecionar a localização
+                    </div>
+                    
+                    <div class="form-row coordinates-input">
+                        <div class="form-group">
+                            <label for="itemLat">Latitude *</label>
+                            <input type="number" id="itemLat" name="itemLat" required step="any" placeholder="Ex: -15.7942" min="-90" max="90">
+                        </div>
+                        <div class="form-group">
+                            <label for="itemLng">Longitude *</label>
+                            <input type="number" id="itemLng" name="itemLng" required step="any" placeholder="Ex: -47.8822" min="-180" max="180">
+                        </div>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label for="itemDescription">Descrição</label>
+                    <textarea id="itemDescription" name="itemDescription" placeholder="Descreva o sítio, descoberta ou informações relevantes..."></textarea>
+                </div>
+
+                <!-- ÁREA MODIFICADA: Upload de arquivo funcionando -->
+                <div class="form-group">
+                    <label>Imagem do Local</label>
+                    
+                    <div class="upload-options">
+                        <div class="upload-option active" onclick="setImageSource('file')">
+                            <i class="fas fa-upload"></i> Upload do Computador
+                        </div>
+                        <div class="upload-option" onclick="setImageSource('url')">
+                            <i class="fas fa-link"></i> URL da Imagem
+                        </div>
+                    </div>
+                    
+                    <div id="fileUploadContainer">
+                        <div class="file-upload-container">
+                            <div class="file-input-wrapper">
+                                <input type="file" id="itemImageFile" name="itemImageFile" accept="image/*" class="file-input" onchange="handleFileSelect(event)">
+                                <label for="itemImageFile" class="file-input-button">
+                                    <i class="fas fa-cloud-upload-alt"></i> Escolher Arquivo
+                                </label>
+                            </div>
+                            <div class="file-name" id="fileName">Nenhum arquivo selecionado</div>
+                            <img id="imagePreview" class="image-preview" src="" alt="Pré-visualização">
+                        </div>
+                    </div>
+                    
+                    <div id="urlInputContainer" style="display: none;">
+                        <input type="url" id="itemImageUrl" name="itemImageUrl" placeholder="https://exemplo.com/imagem.jpg">
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label for="itemSiteUrl">URL do Site (opcional)</label>
+                    <input type="url" id="itemSiteUrl" name="itemSiteUrl" placeholder="https://exemplo.com">
+                </div>
+
+                <div class="form-actions">
+                    <button type="button" class="btn btn-secondary" onclick="closeAddModal()">Cancelar</button>
+                    <button type="submit" class="btn btn-primary" id="submitBtn">Adicionar ao Mapa</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Hero Section -->
+    <section class="hero">
+        <div class="container hero-content">
+            <h1>Revolucionando a Pesquisa Arqueológica com Tecnologia</h1>
+            <p>Integração avançada de sistemas geoespaciais, documentação digital e análise de dados para arqueologia do século XXI</p>
+            <div class="hero-buttons">
+                <a href="#map" class="btn btn-primary">Explorar Plataforma</a>
+                <a href="#features" class="btn btn-secondary">Ver Recursos</a>
+            </div>
+        </div>
+    </section>
+
+    <!-- Seção Sobre -->
+    <section id="sobre" class="saiba-mais-sobre">
+        <div class="container">
+            <h1>O que é arqueologia?</h1>
+            <p>A Arqueologia é a ciência que estuda o passado humano, tanto antigo quanto recente, através da análise de vestígios materiais como objetos, ferramentas, construções e fósseis. Ela busca compreender as culturas e os modos de vida das populações antigas, utilizando trabalho de campo (escavações), análise laboratorial de materiais e divulgação do conhecimento produzido.</p>
+        </div>
+    </section>
+
+    <!-- Seção do Mapa Interativo -->
+    <section id="map" class="map-section">
+        <div class="container">
+            <div class="section-header">
+                <h2 class="section-title">Mapa Arqueológico Interativo</h2>
+                <p class="section-subtitle">Visualize, analise e documente sítios arqueológicos em tempo real com nossa plataforma geoespacial integrada</p>
+            </div>
+            
+            <div class="map-container">
+                <div id="archaeologicalMap"></div>
+                
+                <!-- Filtros do Mapa -->
+                <div class="map-filters">
+                    <div class="filter-header">
+                      <h3><i class="fas fa-filter"></i> Filtros</h3>
+                    </div>
+                    
+                    <div class="filter-group">
+                        <label for="filterType">Tipo de Sítio</label>
+                        <select id="filterType">
+                            <option value="all">Todos os Tipos</option>
+                            <option value="Sítio em Escavação">Sítio em Escavação</option>
+                            <option value="Sítio Documentado">Sítio Documentado</option>
+                            <option value="Área Protegida">Área Protegida</option>
+                            <option value="Artefato Registrado">Artefato Registrado</option>
+                            <option value="Estrutura Arqueológica">Estrutura Arqueológica</option>
+                            <option value="Museus Arqueológicos">Museu Arqueológico</option>
+                        </select>
+                    </div>
+                    
+                    <div class="filter-group">
+                        <label for="filterPeriod">Período</label>
+                        <select id="filterPeriod">
+                            <option value="all">Todos os Períodos</option>
+                            <option value="Pleistoceno">Pleistoceno</option>
+                            <option value="Holoceno">Holoceno</option>
+                            <option value="Pré-colonial">Pré-colonial</option>
+                            <option value="Colonial">Colonial</option>
+                            <option value="Contemporâneo">Contemporâneo</option>
+                        </select>
+                    </div>
+                    
+                    <div class="filter-actions">
+                        <button class="filter-btn" onclick="applyFilters()">Aplicar Filtros</button>
+                        <button class="filter-btn secondary" onclick="resetFilters()">Limpar</button>
+                    </div>
+                </div>
+                
+                <!-- Legenda do Mapa -->
+                <div class="map-overlay">
+                    <div class="legend-header">
+                      <h3><i class="fas fa-layer-group"></i> Legenda do Mapa</h3>
+                      <button class="toggle-button" onclick="toggleLegend()">-</button>
+                    </div>
+
+                    <div class="map-legend" id="legendContent">
+                        <div class="legend-item">
+                            <div class="legend-color" style="background-color: #ff0400;"></div>
+                            <span>Sítio em Escavação</span>
+                        </div>
+                        <div class="legend-item">
+                            <div class="legend-color" style="background-color: #0022ff;"></div>
+                            <span>Sítio Documentado</span>
+                        </div>
+                        <div class="legend-item">
+                            <div class="legend-color" style="background-color: #00ff0d;"></div>
+                            <span>Área Protegida</span>
+                        </div>
+                        <div class="legend-item">
+                            <div class="legend-color" style="background-color: #ffb52c;"></div>
+                            <span>Artefato Registrado</span>
+                        </div>
+                        <div class="legend-item">
+                            <div class="legend-color" style="background-color: #c800ff;"></div>
+                            <span>Estrutura Arqueológica</span>
+                        </div>
+                        <div class="legend-item">
+                            <div class="legend-color" style="background-color: #ffff00;"></div>
+                            <span>Museus Arqueológicos</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Seção de Recursos -->
+    <section id="features" class="features-section">
+        <div class="container">
+            <div class="section-header">
+                <h2 class="section-title">Tecnologia Arqueológica Avançada</h2>
+                <p class="section-subtitle">Ferramentas especializadas desenvolvidas para pesquisadores e equipes de campo</p>
+            </div>
+            
+            <div class="features-grid">
+                <div class="feature-card">
+                    <div class="feature-icon">
+                        <i class="fas fa-map-marked-alt"></i>
+                    </div>
+                    <h3>Georreferenciamento</h3>
+                    <p>Precisão centimétrica no registro de coordenadas com integração de receptores GNSS de alta qualidade.</p>
+                    <a href="#" class="feature-link">Saiba mais <i class="fas fa-arrow-right"></i></a>
+                </div>
+                
+                <div class="feature-card">
+                    <div class="feature-icon">
+                        <i class="fas fa-layer-group"></i>
+                    </div>
+                    <h3>Gestão Estratigráfica</h3>
+                    <p>Documentação automatizada de camadas com registro fotográfico e descritivo.</p>
+                    <a href="#" class="feature-link">Saiba mais <i class="fas fa-arrow-right"></i></a>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Seção CTA -->
+    <section class="cta-section">
+        <div class="container">
+            <div class="cta-content">
+                <h2 style="margin-bottom: 1rem;">Pronto para revolucionar sua pesquisa arqueológica?</h2>
+                <p style="margin-bottom: 2rem;">Junte-se a centenas de pesquisadores que já utilizam nossa plataforma para documentação, análise e gestão de dados arqueológicos.</p>
+                <a href="#contact" class="btn btn-primary">Solicitar Demonstração</a>
+            </div>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer id="contact">
+        <div class="container">
+            <div class="footer-content">
+                <div class="footer-column footer-about">
+                    <h3>Archaeology World</h3>
+                    <p>Soluções tecnológicas avançadas para pesquisa e gestão do patrimônio arqueológico. Integrando conhecimento tradicional com inovação digital.</p>
+                    <div class="footer-social">
+                        <a href="#"><i class="fab fa-twitter"></i></a>
+                        <a href="#"><i class="fab fa-linkedin"></i></a>
+                        <a href="#"><i class="fab fa-researchgate"></i></a>
+                        <a href="#"><i class="fab fa-youtube"></i></a>
+                    </div>
+                </div>
+                
+                <div class="footer-column footer-links">
+                    <h3>Recursos</h3>
+                    <ul>
+                        <li><a href="#">Documentação Técnica</a></li>
+                        <li><a href="#">Tutoriais em Vídeo</a></li>
+                        <li><a href="#">Banco de Dados Público</a></li>
+                        <li><a href="#">Publicações Científicas</a></li>
+                    </ul>
+                </div>
+                
+                <div class="footer-column footer-contact">
+                    <h3>Contato</h3>
+                    <p><i class="fas fa-map-marker-alt"></i> Av. Arqueologia, 123 - Centro</p>
+                    <p><i class="fas fa-phone"></i> (11) 98765-4321</p>
+                    <p><i class="fas fa-envelope"></i> contato@archaeologyworld.com</p>
+                </div>
+            </div>
+            
+            <div class="footer-bottom">
+                <p>&copy; 2024 Archaeology World. Todos os direitos reservados.</p>
+                <p>Desenvolvido com paixão pela arqueologia e tecnologia.</p>
+            </div>
+        </div>
+    </footer>
+
+    <script src="https://unpkg.com/leaflet@1.9.3/dist/leaflet.js"></script>
+    <script>
+        // Variáveis globais
+        let map;
+        let modalMap;
+        let selectionMarker = null;
+        let modalSelectionMarker = null;
+        let isSelectingLocation = false;
+        let userAddedSites = JSON.parse(localStorage.getItem('userAddedSites')) || [];
+        let currentMarkers = [];
+        let imageSourceType = 'file'; // 'file' ou 'url'
+
+        // Dados COMPLETOS dos sites originais - TODOS RESTAURADOS
+        const sites = [
+            {
+                id: 'site-01',
+                name: 'Lapa do Santo',
+                coords: [-19.605, -44.000],
+                type: 'Sítio em Escavação',
+                period: 'Holoceno Inicial',
+                status: 'Documentado',
+                artifacts: 800,
+                color: '#ff0400',
+                image: 'fotos/isblog05.jpg'
+            },
+            {
+                id: 'site-02',
+                name: 'Caverna da Pedra Pintada',
+                coords: [-1.99768, -54.07239], 
+                type: 'Sítio Documentado',
+                period: 'Pleistoceno–Holoceno',
+                status: 'Documentado',
+                artifacts: 42,
+                image: 'fotos/6b242fff068c7c41102b319c37e38ab374e70375.jpg',
+                color: '#0022ff'
+            },
+            {
+                id: 'site-03',
+                name: 'Sambaqui do Moa',
+                coords: [-22.9667, -42.0333], 
+                type: 'Área Protegida',
+                period: 'Holoceno Médio',
+                status: 'Protegido',
+                artifacts: 356,
+                image: 'fotos/image032.jpg',
+                color: '#00ff0d'
+            },
+            {
+                id: 'site-04',
+                name: 'Terra Preta do Índio',
+                coords: [-3.1667, -60.0167], 
+                type: 'Sítio Documentado',
+                period: 'Holoceno Tardio',
+                status: 'Documentado',
+                artifacts: 215,
+                image: 'fotos/24RA542.jpg',
+                color: '#0022ff'
+            },
+            {
+                id: 'site-05',
+                name: 'Serra da Capivara',
+                coords: [-8.8371, -42.5636],
+                type: 'Área Protegida',
+                period: 'Pleistoceno–Holoceno',
+                status: 'Patrimônio Mundial',
+                artifacts: 1200,
+                image: 'fotos/serradacapivara-vidasemparedes-33-1024x576.webp',
+                color: '#00ff0d'
+            },
+            {
+                id: 'site-06',
+                name: 'Museu de Arqueologia Bíblica - (MAB/UNASP)',
+                coords: [-22.5011, -47.1651],
+                type: 'Museus Arqueológicos',
+                period: 'Contemporâneo',
+                status: 'Ativo',
+                artifacts: 150,
+                color: '#ffff00',
+                siteUrl: 'https://tour.unasp.edu.br/mab',
+                image: 'fotos/images (1).jpg'
+            },
+            {
+                id: 'site-07',
+                name: 'Universidade de São Paulo – Museu de Arqueologia e Etnologia (MAE/USP)',
+                coords: [-23.561399, -46.730789], 
+                type: 'Museus Arqueológicos',
+                period: 'Pré-colonial a Contemporâneo',
+                status: 'Ativo',
+                artifacts: 150,
+                color: '#ffff00',
+                image: 'fotos/12DC341.jpg',
+                siteUrl: 'USP.html'
+            },
+            {
+                id: 'site-08',
+                name: 'Museu de Arqueologia e Etnologia (MAE/UFBA)',
+                coords: [-12.972771, -38.510216], 
+                type: 'Museus Arqueológicos',
+                period: 'Pré-colonial, colonial e contemporâneo',
+                status: 'Ativo',
+                artifacts: 200,
+                image: 'fotos/images (2).jpg', 
+                color: '#ffff00'
+            },
+            {
+                id: 'artefato-02',
+                name: 'Capacete celta de bronze',
+                coords: [52.400, 21.150],
+                type: 'Artefato Registrado',
+                period: 'Idade do Ferro',
+                status: 'Achado isolado em área rural',
+                artifacts: 200,
+                site: 'Desconhecido (fora de sítio celta)',
+                image: 'fotos/Celtic_-_Helmet_Italo-Celtic_3rd_century_BC_(bronze)_-_(MeisterDrucke-241460).jpg',
+                color: '#ffb52c'
+            },
+            {
+                id: 'artefato-03',
+                name: 'Fragmento cerâmico Tupi',
+                coords: [-16.0056, -51.3971],
+                type: 'Artefato Registrado',
+                period: 'Pré-colonial',
+                status: 'Disperso em área agrícola',
+                site: 'Montes Claros de Goiás',
+                artifacts: 200,
+                image: 'fotos/fragmentos.jpg',
+                color: '#ffb52c'
+            },
+            {
+                id: 'artefato-04',
+                name: 'Lesma lítica (Tradição Itaparica)',
+                coords: [-10.000, -56.000],
+                type: 'Artefato Registrado',
+                period: 'Pré-cerâmica',
+                status: 'Encontrado fora de abrigo',
+                site: 'Tradição Itaparica',
+                artifacts: 200,
+                image: 'fotos/images (3).jpg',
+                color: '#ffb52c'
+            },
+            {
+                id: 'artefato-05',
+                name: 'Machado polido isolado',
+                coords: [-19.630, -43.882],
+                type: 'Artefato Registrado',
+                period: 'Holoceno Médio',
+                status: 'Fora de contexto',
+                site: 'Região de Lagoa Santa',
+                artifacts: 200,
+                image: 'fotos/463-1.jpg',
+                color: '#ffb52c'
+            },
+            {
+                id: 'artefato-06',
+                name: 'Estatueta romana em mármore',
+                coords: [41.9028, 12.4964],
+                type: 'Artefato Registrado',
+                period: 'Império Romano',
+                status: 'Recuperado em mercado ilegal',
+                site: 'Origem incerta',
+                artifacts: 200,
+                image: 'fotos/ah-padrao-2024-10-18t125446055.jpg',
+                color: '#ffb52c'
+            },
+            {
+                id: 'artefato-07',
+                name: 'Cerâmica Marajoara',
+                coords: [-9.9085, -64.3050],
+                type: 'Artefato Registrado',
+                period: 'Pré-colombiano',
+                status: 'Encontrada fora de sítio',
+                site: 'Região do Rio Madeira',
+                artifacts: 200,
+                image: 'fotos/Cylindrical_vessel_Collection_H_Law_170_n2.jpg',
+                color: '#ffb52c'
+            },
+            {
+                id: 'artefato-08',
+                name: 'Pontas de flecha tupinambá',
+                coords: [-23.5505, -46.6333],
+                type: 'Artefato Registrado',
+                period: 'Pré-colonial',
+                status: 'Disperso em área florestal',
+                site: 'Mata Atlântica',
+                artifacts: 200,
+                image: 'fotos/Fleche_Cartailhac_MHNT_PRE_2009.0.232.2_simple (1).jpg',
+                color: '#ffb52c'
+            },
+            {
+                id: 'artefato-09',
+                name: 'Fóssil de Luzia',
+                coords: [-19.9317, -43.9408],
+                type: 'Artefato Registrado',
+                period: 'Pleistoceno final (cerca de 11.500 anos)',
+                status: 'Parcialmente preservado após incêndio',
+                site: 'Lapa Vermelha, Pedro Leopoldo - MG',
+                artifacts: 200,
+                image: 'fotos/cranio_de_luzia.jpg',
+                color: '#ffb52c'
+            },
+            {
+                id: 'area-01',
+                name: 'Parque Nacional da Tijuca',
+                coords: [-22.9485, -43.2343],
+                type: 'Área Protegida',
+                status: 'Protegida',
+                biome: 'Mata Atlântica',
+                artifacts: 850,
+                image: 'fotos/images (4).jpg',
+                color: '#00ff0d'
+            },
+            {
+                id: 'area-02',
+                name: 'Reserva Biológica de Sooretama',
+                coords: [-19.0892, -40.3150],
+                type: 'Área Protegida',
+                status: 'Protegida',
+                biome: 'Mata Atlântica',
+                artifacts: 400,
+                image: 'fotos/ipatrimonio-Sooretama-Reserva-Biologica-de-Sooretama-Imagem-ICMBio.jpg',
+                color: '#00ff0d'
+            },
+            {
+                id: 'area-03',
+                name: 'Parque Nacional do Pico da Neblina',
+                coords: [0.8173, -66.5600],
+                type: 'Área Protegida',
+                status: 'Protegida',
+                biome: 'Amazônia',
+                artifacts: 1200,
+                image: 'fotos/Pico_da_Neblina.jpg',
+                color: '#00ff0d'
+            },
+            {
+                id: 'area-05',
+                name: 'Reserva Extrativista Marinha do Marajó',
+                coords: [-0.9847, -49.6663],
+                type: 'Área Protegida',
+                status: 'Protegida',
+                biome: 'Amazônia',
+                artifacts: 600,
+                image: 'fotos/images (5).jpg',
+                color: '#00ff0d'
+            },
+            {
+                id: 'area-06',
+                name: 'Floresta Nacional do Tapajós',
+                coords: [-3.4766, -57.1181],
+                type: 'Área Protegida',
+                status: 'Protegida',
+                biome: 'Amazônia',
+                artifacts: 1100,
+                image: 'fotos/images (6).jpg',
+                color: '#00ff0d'
+            },
+            {
+                id: 'area-07',
+                name: 'Parque Indígena do Xingu',
+                coords: [-12.5000, -52.5000],
+                type: 'Área Protegida',
+                status: 'Protegida',
+                biome: 'Cerrado / Amazônia',
+                artifacts: 1300,
+                image: 'fotos/1.jpeg',
+                color: '#00ff0d'
+            },
+            {
+                id: 'area-08',
+                name: 'Parque Nacional da Chapada Diamantina',
+                coords: [-12.5000, -41.4500],
+                type: 'Área Protegida',
+                status: 'Protegida',
+                biome: 'Caatinga / Mata Atlântica',
+                artifacts: 700,
+                image: 'fotos/Desde_o_Morro_do_Pai_Inácio.jpg',
+                color: '#00ff0d'
+            },
+            {
+                id: 'estrut-01',
+                name: 'Templo do Sol (Coricancha)',
+                coords: [-13.5181, -71.9786],
+                type: 'Estrutura Arqueológica',
+                status: 'Ruínas preservadas',
+                description: 'Templo solar principal do Império Inca, base de construções posteriores.',
+                artifacts: 450,
+                image: 'fotos/images (7).jpg',
+                color: '#c800ff'
+            },
+            {
+                id: 'estrut-02',
+                name: 'Pirâmide do Sol',
+                coords: [19.6925, -98.8438],
+                type: 'Estrutura Arqueológica',
+                status: 'Conservada',
+                description: 'Uma das maiores pirâmides da América pré-colombiana, centro cerimonial.',
+                artifacts: 1200,
+                image: 'fotos/images (9).jpg',
+                color: '#c800ff'
+            },
+            {
+                id: 'estrut-03',
+                name: 'Templo de Ártemis',
+                coords: [37.9582, 27.3642],
+                type: 'Estrutura Arqueológica',
+                status: 'Ruínas fragmentadas',
+                description: 'Construído em homenagem à deusa Ártemis, foi uma das Sete Maravilhas do Mundo Antigo, destruído por um incêndio e saqueado.',
+                artifacts: 120,
+                image: 'fotos/images (16).jpg',
+                color: '#c800ff'
+            },
+            {
+                id: 'estrut-04',
+                name: 'Palácio de Knossos',
+                coords: [35.2989, 25.1648],
+                type: 'Estrutura Arqueológica',
+                status: 'Ruínas',
+                description: 'Complexo palaciano da civilização minoana, com frescos e arquitetura sofisticada.',
+                artifacts: 600,
+                image: 'fotos/images (8).jpg',
+                color: '#c800ff'
+            },
+            {
+                id: 'estrut-05',
+                name: 'Muralhas de Chan Chan',
+                coords: [-8.1120, -79.0330],
+                type: 'Estrutura Arqueológica',
+                status: 'Ruínas',
+                description: 'Ruínas de antiga capital Chimú, com grandes muralhas e palácios.',
+                artifacts: 900,
+                image: 'fotos/istockphoto-498796572-612x612.jpg',
+                color: '#c800ff'
+            },
+            {
+                id: 'estrut-06',
+                name: 'Templo de Kukulkán (El Castillo)',
+                coords: [20.6829, -88.5698],
+                type: 'Estrutura Arqueológica',
+                status: 'Preservada',
+                description: 'Pirâmide escalonada dedicada ao deus Kukulkán, famosa por seu alinhamento astronômico.',
+                artifacts: 1000,
+                image: 'fotos/images (10).jpg',
+                color: '#c800ff'
+            },
+            {
+                id: 'estrut-07',
+                name: 'Templo de Hathor',
+                coords: [25.7403, 32.6014],
+                type: 'Estrutura Arqueológica',
+                status: 'Ruínas',
+                description: 'Templo dedicado à deusa Hathor, com relevos e arquitetura bem preservada.',
+                artifacts: 700,
+                image: 'fotos/images (11).jpg',
+                color: '#c800ff'
+            },
+            {
+                id: 'estrut-08',
+                name: 'Ruínas da Igreja de São Miguel das Missões',
+                coords: [-27.4941, -54.5810],
+                type: 'Estrutura Arqueológica',
+                status: 'Parcialmente preservada',
+                description: 'Igreja da missão jesuítica do século XVIII, importante para a história colonial.',
+                artifacts: 350,
+                image: 'fotos/images (12).jpg',
+                color: '#c800ff'
+            },
+            {
+                id: 'estrut-09',
+                name: 'Pirâmide de Cochasquí',
+                coords: [-0.0055, -78.4098],
+                type: 'Estrutura Arqueológica',
+                status: 'Ruínas',
+                description: 'Complexo arqueológico com pirâmides truncadas e plataformas cerimoniais.',
+                artifacts: 500,
+                image: 'fotos/Foto-142-Piramide-de-Cochasqui.jpg',
+                color: '#c800ff'
+            },
+            {
+                id: 'estrut-10',
+                name: 'Fortaleza de Sacsayhuamán',
+                coords: [-13.5090, -71.9817],
+                type: 'Estrutura Arqueológica',
+                status: 'Ruínas',
+                description: 'Estrutura megalítica com pedras encaixadas com precisão incrível.',
+                artifacts: 800,
+                image: 'fotos/images (13).jpg',
+                color: '#c800ff'
+            },
+            {
+                id: 'estrut-11',
+                name: 'Templo de Kalasasaya',
+                coords: [-16.5613, -68.6537],
+                type: 'Estrutura Arqueológica',
+                status: 'Ruínas',
+                description: 'Grande templo cerimonial com estruturas de pedra monumental.',
+                artifacts: 650,
+                image: 'fotos/Templo_de_Kalasasaya_a_socha_Monolito_Ponce_-_Tiwanaku_-_panoramio_(1) (1).jpg',
+                color: '#c800ff'
+            },
+            {
+                id: 'estrut-12',
+                name: 'Mausoléu de Halicarnasso',
+                coords: [37.0379, 27.4241],
+                type: 'Estrutura Arqueológica',
+                status: 'Ruínas parciais',
+                description: 'Uma das Sete Maravilhas do Mundo Antigo, tumba construída para Mausolo, sátrapa da Cária.',
+                artifacts: 150,
+                image: 'fotos/download (2).jpg',
+                color: '#c800ff'
+            },
+            {
+                id: 'escav-01',
+                name: 'Sambaqui do Bacanga',
+                coords: [-2.5333, -44.2833],
+                type: 'Sítio em Escavação',
+                status: 'Em escavação',
+                description: 'Sítio costeiro com conchas, esqueletos humanos e artefatos líticos.',
+                artifacts: 720,
+                image: 'fotos/Figura-6-Escavacao-da-Superficie-Ampla-no-Sambaqui-do-Bacanga.png',
+                color: '#ff0400'
+            },
+            {
+                id: 'escav-02',
+                name: 'Sítio Arqueológico do Alto da Estiva',
+                coords: [-7.2306, -35.8811],
+                type: 'Sítio em Escavação',
+                status: 'Escavação em andamento',
+                description: 'Fragmentos cerâmicos, estruturas de ocupação e sepultamentos.',
+                artifacts: 430,
+                image: 'fotos/stioarqueolgicotocadaanta.webp',
+                color: '#ff0400'
+            },
+            {
+                id: 'escav-03',
+                name: 'Sítio Furna do Estrago',
+                coords: [-8.2831, -36.0153],
+                type: 'Sítio em Escavação',
+                status: 'Escavação ativa',
+                description: 'Importante para o estudo da transição entre caçadores-coletores e ceramistas.',
+                artifacts: 860,
+                image: 'fotos/images (14).jpg',
+                color: '#ff0400'
+            },
+            {
+                id: 'escav-04',
+                name: 'Sítio do Riacho do Meio',
+                coords: [-9.3958, -37.9972],
+                type: 'Sítio em Escavação',
+                status: 'Investigação em curso',
+                description: 'Ocorrência de material lítico e ossadas humanas em bom estado.',
+                artifacts: 390,
+                image: 'fotos/riachodomeio.jpg',
+                color: '#ff0400'
+            },
+            {
+                id: 'escav-05',
+                name: 'Sítio Arqueológico Santa Elina',
+                coords: [-15.1333, -59.0833],
+                type: 'Sítio em Escavação',
+                status: 'Escavações recentes',
+                description: 'Possível presença de megafauna associada a humanos.',
+                artifacts: 510,
+                image: 'fotos/Parede_do_Sítio_arqueológico_Santa_Elina.jpg',
+                color: '#ff0400'
+            },
+            {
+                id: 'escav-06',
+                name: 'Sítio da Lapa do Boquete',
+                coords: [-14.3206, -43.8456],
+                type: 'Sítio em Escavação',
+                status: 'Escavação ativa',
+                description: 'Sepultamentos com urnas funerárias e ferramentas.',
+                artifacts: 740,
+                image: 'fotos/janelao.jpg',
+                color: '#ff0400'
+            },
+            {
+                id: 'escav-07',
+                name: 'Sítio Arqueológico do Vale do Ribeira',
+                coords: [-24.6000, -48.7000],
+                type: 'Sítio em Escavação',
+                status: 'Pesquisas em andamento',
+                description: 'Material ósseo, cerâmico e estruturas rituais pré-coloniais.',
+                artifacts: 620,
+                image: 'fotos/images (15).jpg',
+                color: '#ff0400'
+            },
+            {
+                id: 'escav-08',
+                name: 'Sítio Pedra do Alexandre',
+                coords: [-6.8847, -39.8781],
+                type: 'Sítio em Escavação',
+                status: 'Escavação recente',
+                description: 'Arte rupestre e artefatos associados a rituais.',
+                artifacts: 360,
+                image: 'fotos/Figura-5-Enterramento-15-do-sitio-Pedra-do-Alexandre-Area-Arqueologica-do-Serido (1).png',
+                color: '#ff0400'
+            },
+            // SÍTIOS DO VALE DO PARAÍBA - CIDADES ESPECÍFICAS
+            {
+                id: 'site-vp-sjc-02',
+                name: 'Sítio Arqueológico do Jardim Satélite - São José dos Campos',
+                coords: [-23.2342, -45.8994],
+                type: 'Sítio Documentado',
+                period: 'Holoceno Inicial',
+                status: 'Documentado',
+                artifacts: 310,
+                color: '#0022ff',
+                image: 'https://via.placeholder.com/300x200/2c5530/ffffff?text=Satélite+SJC'
+            },
+            {
+                id: 'site-vp-sjc-04',
+                name: 'Sítio Arqueológico do Putim - São José dos Campos',
+                coords: [-23.2500, -45.9167],
+                type: 'Sítio em Escavação',
+                period: 'Holoceno Tardio',
+                status: 'Em escavação',
+                artifacts: 240,
+                color: '#ff0400',
+                image: 'https://via.placeholder.com/300x200/2c5530/ffffff?text=Putim+SJC'
+            },
+            {
+                id: 'site-vp-jacarei-01',
+                name: 'Sítio Arqueológico de Jacareí - Região Central',
+                coords: [-23.2889, -45.9658],
+                type: 'Sítio Documentado',
+                period: 'Holoceno Médio',
+                status: 'Documentado',
+                artifacts: 420,
+                color: '#0022ff',
+                image: 'https://via.placeholder.com/300x200/2c5530/ffffff?text=Jacareí+Central'
+            },
+            {
+                id: 'site-vp-jacarei-02',
+                name: 'Sambaqui do Rio Paraíba - Jacareí',
+                coords: [-23.2889, -45.9722],
+                type: 'Área Protegida',
+                period: 'Holoceno Médio',
+                status: 'Protegido',
+                artifacts: 480,
+                color: '#00ff0d',
+                image: 'https://via.placeholder.com/300x200/2c5530/ffffff?text=Rio+Paraíba+Jacareí'
+            },
+            {
+                id: 'site-vp-jacarei-03',
+                name: 'Sítios Indígenas Históricos do Rio Comprido - Jacareí',
+                coords: [-23.2870, -45.9600],
+                type: 'Sítio Documentado',
+                period: 'Pré-colonial',
+                status: 'Documentado',
+                artifacts: 300,
+                color: '#0022ff',
+                image: 'https://via.placeholder.com/300x200/2c5530/ffffff?text=Rio+Comprido+Jacareí'
+            },
+            {
+                id: 'site-vp-jacarei-04',
+                name: 'Sítio Arqueológico da Santa Casa - Jacareí',
+                coords: [-23.2983, -45.9589],
+                type: 'Sítio Documentado',
+                period: 'Holoceno Tardio',
+                status: 'Documentado',
+                artifacts: 135,
+                color: '#0022ff',
+                image: 'https://via.placeholder.com/300x200/2c5530/ffffff?text=Santa+Casa+Jacareí'
+            },
+            {
+                id: 'site-vp-taubate-01',
+                name: 'Sambaqui do Parque do Itaim - Taubaté',
+                coords: [-23.0264, -45.5556],
+                type: 'Área Protegida',
+                period: 'Holoceno Médio',
+                status: 'Protegido',
+                artifacts: 350,
+                color: '#00ff0d',
+                image: 'https://via.placeholder.com/300x200/2c5530/ffffff?text=Itaim+Taubaté'
+            },
+            {
+                id: 'site-vp-taubate-02',
+                name: 'Sítio Arqueológico do Quiririm - Taubaté',
+                coords: [-23.0581, -45.6028],
+                type: 'Área Protegida',
+                period: 'Holoceno Tardio',
+                status: 'Patrimônio Municipal',
+                artifacts: 120,
+                color: '#00ff0d',
+                image: 'https://via.placeholder.com/300x200/2c5530/ffffff?text=Quiririm+Taubaté'
+            },
+            {
+                id: 'site-vp-taubate-03',
+                name: 'Sítio Arqueológico do Una - Taubaté',
+                coords: [-23.0417, -45.5625],
+                type: 'Sítio Documentado',
+                period: 'Holoceno Médio',
+                status: 'Documentado',
+                artifacts: 390,
+                color: '#0022ff',
+                image: 'https://via.placeholder.com/300x200/2c5530/ffffff?text=Una+Taubaté'
+            },
+            {
+                id: 'site-vp-cacapava-01',
+                name: 'Sítio Arqueológico de Caçapava - Vila Menino Jesus',
+                coords: [-23.1003, -45.7078],
+                type: 'Sítio Documentado',
+                period: 'Holoceno Tardio',
+                status: 'Documentado',
+                artifacts: 220,
+                color: '#0022ff',
+                image: 'https://via.placeholder.com/300x200/2c5530/ffffff?text=Caçapava+Vila'
+            },
+            {
+                id: 'site-vp-tremembe-01',
+                name: 'Gruta dos Índios - Tremembé',
+                coords: [-22.9572, -45.5494],
+                type: 'Sítio em Escavação',
+                period: 'Holoceno Inicial',
+                status: 'Documentado',
+                artifacts: 850,
+                color: '#ff0400',
+                image: 'https://via.placeholder.com/300x200/2c5530/ffffff?text=Gruta+Tremembé'
+            },
+            {
+                id: 'site-vp-pindamonhangaba-01',
+                name: 'Sítio Arqueológico da Fazenda da Grama - Pindamonhangaba',
+                coords: [-22.9239, -45.4617],
+                type: 'Sítio em Escavação',
+                period: 'Holoceno Tardio',
+                status: 'Em escavação',
+                artifacts: 190,
+                color: '#ff0400',
+                image: 'https://via.placeholder.com/300x200/2c5530/ffffff?text=Fazenda+Grama'
+            },
+            {
+                id: 'site-vp-campos-do-jordao-01',
+                name: 'Sítio Arqueológico de Campos do Jordão - Abernéssia',
+                coords: [-22.7392, -45.5914],
+                type: 'Sítio Documentado',
+                period: 'Pleistoceno–Holoceno',
+                status: 'Documentado',
+                artifacts: 280,
+                color: '#0022ff',
+                image: 'https://via.placeholder.com/300x200/2c5530/ffffff?text=Campos+Jordão'
+            }
+        ];
+
+        // Inicialização do mapa principal
+        function initializeMap() {
+            map = L.map('archaeologicalMap', {
+                zoomControl: false,
+                attributionControl: false,
+                worldCopyJump: false,
+                maxBounds: [[-90, -180], [90, 180]],
+                maxBoundsViscosity: 1.0,
+                minZoom: 2.5
+            }).setView([-15.7942, -47.8822], 5);
+
+            L.tileLayer('https://{s}.tile.opentopomap.org/{z}/{x}/{y}.png', {
+                maxZoom: 17,
+                attribution: 'Map data: © OpenStreetMap contributors, SRTM | Map style: © OpenTopoMap (CC‑BY‑SA)',
+                noWrap: true
+            }).addTo(map);
+
+            L.control.zoom({ position: 'topright' }).addTo(map);
+            L.control.scale({ position: 'bottomleft', metric: true, imperial: false }).addTo(map);
+
+            // Adicionar sites existentes
+            addSitesToMap();
+            
+            // Adicionar sites do usuário
+            addUserSitesToMap();
+        }
+
+        // Inicialização do mapa do modal
+        function initializeModalMap() {
+            if (modalMap) {
+                modalMap.remove();
+            }
+
+            modalMap = L.map('modalMap', {
+                zoomControl: true,
+                attributionControl: false,
+                worldCopyJump: false
+            }).setView([-15.7942, -47.8822], 4);
+
+            L.tileLayer('https://{s}.tile.opentopomap.org/{z}/{x}/{y}.png', {
+                maxZoom: 17,
+                attribution: 'Map data: © OpenStreetMap contributors, SRTM | Map style: © OpenTopoMap (CC‑BY‑SA)',
+                noWrap: true
+            }).addTo(modalMap);
+
+            // Adicionar evento de clique ao mapa do modal
+            modalMap.on('click', function(e) {
+                if (isSelectingLocation) {
+                    onModalMapClick(e);
+                }
+            });
+
+            return modalMap;
+        }
+
+        // ===== FUNÇÕES DE FILTRO ===== //
+        function applyFilters() {
+            const typeFilter = document.getElementById('filterType').value;
+            const periodFilter = document.getElementById('filterPeriod').value;
+            
+            // Limpar todos os marcadores atuais
+            currentMarkers.forEach(marker => {
+                map.removeLayer(marker);
+            });
+            currentMarkers = [];
+            
+            // Recarregar sites com base nos filtros
+            // Sites originais filtrados
+            sites.forEach(site => {
+                // Aplicar filtros
+                if (typeFilter !== 'all' && site.type !== typeFilter) return;
+                if (periodFilter !== 'all' && !site.period.includes(periodFilter)) return;
+                
+                addSiteToMap(site);
+            });
+            
+            // Sites do usuário filtrados
+            userAddedSites.forEach(site => {
+                // Aplicar filtros
+                if (typeFilter !== 'all' && site.type !== typeFilter) return;
+                if (periodFilter !== 'all' && !site.period.includes(periodFilter)) return;
+                
+                addSiteToMap(site);
+            });
+            
+            showNotification('Filtros aplicados com sucesso!', 'success');
+        }
+        
+        function resetFilters() {
+            document.getElementById('filterType').value = 'all';
+            document.getElementById('filterPeriod').value = 'all';
+            applyFilters();
+        }
+
+        // ===== FUNÇÕES DE UPLOAD DE IMAGEM ===== //
+        // Alternar entre upload de arquivo e URL
+        function setImageSource(type) {
+            imageSourceType = type;
+            
+            // Atualizar UI
+            document.querySelectorAll('.upload-option').forEach(option => {
+                option.classList.remove('active');
+            });
+            event.target.classList.add('active');
+            
+            // Mostrar o container correto
+            if (type === 'file') {
+                document.getElementById('fileUploadContainer').style.display = 'block';
+                document.getElementById('urlInputContainer').style.display = 'none';
+            } else {
+                document.getElementById('fileUploadContainer').style.display = 'none';
+                document.getElementById('urlInputContainer').style.display = 'block';
+            }
+        }
+
+        // Lidar com seleção de arquivo
+        function handleFileSelect(event) {
+            const file = event.target.files[0];
+            const fileNameElement = document.getElementById('fileName');
+            const imagePreview = document.getElementById('imagePreview');
+            
+            if (file) {
+                fileNameElement.textContent = file.name;
+                
+                // Verificar se é uma imagem
+                if (!file.type.match('image.*')) {
+                    alert('Por favor, selecione apenas arquivos de imagem.');
+                    event.target.value = '';
+                    fileNameElement.textContent = 'Nenhum arquivo selecionado';
+                    imagePreview.style.display = 'none';
+                    return;
+                }
+                
+                // Verificar tamanho do arquivo (limite de 5MB)
+                if (file.size > 5 * 1024 * 1024) {
+                    alert('A imagem é muito grande. Por favor, selecione uma imagem menor que 5MB.');
+                    event.target.value = '';
+                    fileNameElement.textContent = 'Nenhum arquivo selecionado';
+                    imagePreview.style.display = 'none';
+                    return;
+                }
+                
+                // Mostrar pré-visualização
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    imagePreview.src = e.target.result;
+                    imagePreview.style.display = 'block';
+                };
+                reader.readAsDataURL(file);
+            } else {
+                fileNameElement.textContent = 'Nenhum arquivo selecionado';
+                imagePreview.style.display = 'none';
+            }
+        }
+
+        // Função para mostrar notificações
+        function showNotification(message, type = 'info') {
+            // Implementação simples de notificação
+            alert(message);
+        }
+
+        // Funções do modal
+        function openAddModal() {
+            // Verificar se o usuário está logado
+            if (!isUserLoggedIn()) {
+                alert('Você precisa estar logado para adicionar um ponto.');
+                window.location.href = 'login.html';
+                return;
+            }
+            
+            document.getElementById('addModal').classList.add('active');
+            resetForm();
+            
+            // Resetar para upload de arquivo por padrão
+            setImageSource('file');
+            
+            // Inicializar mapa do modal após um pequeno delay para garantir que o container está visível
+            setTimeout(() => {
+                initializeModalMap();
+            }, 100);
+        }
+
+        function closeAddModal() {
+            document.getElementById('addModal').classList.remove('active');
+            disableMapSelection();
+        }
+
+        function enableMapSelection() {
+            isSelectingLocation = true;
+            document.getElementById('coordinatesInfo').textContent = 'Agora clique em qualquer lugar do mapa para selecionar a localização';
+            document.getElementById('coordinatesInfo').style.background = '#e8f5e8';
+            document.getElementById('coordinatesInfo').style.color = '#2c5530';
+            
+            if (modalMap) {
+                modalMap.getContainer().style.cursor = 'crosshair';
+            }
+        }
+
+        function disableMapSelection() {
+            isSelectingLocation = false;
+            document.getElementById('coordinatesInfo').textContent = 'Clique em "Clicar no Mapa" e depois clique no mapa para selecionar a localização';
+            document.getElementById('coordinatesInfo').style.background = '#e9ecef';
+            document.getElementById('coordinatesInfo').style.color = '#333';
+            
+            if (modalMap) {
+                modalMap.getContainer().style.cursor = '';
+            }
+        }
+
+        function onModalMapClick(e) {
+            const lat = e.latlng.lat;
+            const lng = e.latlng.lng;
+            
+            // Atualizar campos de coordenadas com alta precisão
+            document.getElementById('itemLat').value = lat.toFixed(6);
+            document.getElementById('itemLng').value = lng.toFixed(6);
+            
+            // Atualizar informações
+            document.getElementById('coordinatesInfo').textContent = `Localização selecionada: ${lat.toFixed(6)}, ${lng.toFixed(6)}`;
+            document.getElementById('coordinatesInfo').style.background = '#d1ecf1';
+            document.getElementById('coordinatesInfo').style.color = '#0c5460';
+            
+            // Adicionar/atualizar marcador no mapa do modal
+            if (modalSelectionMarker) {
+                modalMap.removeLayer(modalSelectionMarker);
+            }
+            
+            modalSelectionMarker = L.marker([lat, lng], {
+                icon: L.divIcon({
+                    className: 'selection-marker',
+                    html: '<div class="marker-pin selection"></div><i class="fas fa-map-marker-alt"></i>',
+                    iconSize: [30, 42],
+                    iconAnchor: [15, 42]
+                })
+            }).addTo(modalMap);
+            
+            // Centralizar mapa na localização selecionada com zoom mais próximo
+            modalMap.setView([lat, lng], Math.max(modalMap.getZoom(), 10));
+            
+            disableMapSelection();
+        }
+
+        function useCurrentLocation() {
+            if (!navigator.geolocation) {
+                alert('Geolocalização não é suportada pelo seu navegador');
+                return;
+            }
+
+            document.getElementById('coordinatesInfo').textContent = 'Obtendo sua localização com alta precisão...';
+            document.getElementById('coordinatesInfo').style.background = '#fff3cd';
+            document.getElementById('coordinatesInfo').style.color = '#856404';
+
+            navigator.geolocation.getCurrentPosition(
+                function(position) {
+                    const lat = position.coords.latitude;
+                    const lng = position.coords.longitude;
+                    const accuracy = position.coords.accuracy;
+                    
+                    // Atualizar campos de coordenadas com alta precisão
+                    document.getElementById('itemLat').value = lat.toFixed(6);
+                    document.getElementById('itemLng').value = lng.toFixed(6);
+                    
+                    // Atualizar informações
+                    document.getElementById('coordinatesInfo').textContent = `Sua localização: ${lat.toFixed(6)}, ${lng.toFixed(6)} (Precisão: ${Math.round(accuracy)}m)`;
+                    document.getElementById('coordinatesInfo').style.background = '#d1ecf1';
+                    document.getElementById('coordinatesInfo').style.color = '#0c5460';
+                    
+                    // Adicionar/atualizar marcador no mapa do modal
+                    if (modalSelectionMarker) {
+                        modalMap.removeLayer(modalSelectionMarker);
+                    }
+                    
+                    modalSelectionMarker = L.marker([lat, lng], {
+                        icon: L.divIcon({
+                            className: 'selection-marker',
+                            html: '<div class="marker-pin selection"></div><i class="fas fa-map-marker-alt"></i>',
+                            iconSize: [30, 42],
+                            iconAnchor: [15, 42]
+                        })
+                    }).addTo(modalMap);
+                    
+                    // Centralizar mapa na localização com zoom alto
+                    modalMap.setView([lat, lng], 15);
+                    
+                    // Adicionar círculo de precisão se a precisão for conhecida
+                    if (accuracy < 1000) {
+                        L.circle([lat, lng], {
+                            radius: accuracy,
+                            color: '#28a745',
+                            fillColor: '#28a745',
+                            fillOpacity: 0.1,
+                            weight: 1
+                        }).addTo(modalMap);
+                    }
+                },
+                function(error) {
+                    let errorMessage = 'Erro ao obter localização: ';
+                    switch(error.code) {
+                        case error.PERMISSION_DENIED:
+                            errorMessage += 'Permissão negada pelo usuário';
+                            break;
+                        case error.POSITION_UNAVAILABLE:
+                            errorMessage += 'Localização indisponível';
+                            break;
+                        case error.TIMEOUT:
+                            errorMessage += 'Tempo limite excedido';
+                            break;
+                        default:
+                            errorMessage += 'Erro desconhecido';
+                    }
+                    document.getElementById('coordinatesInfo').textContent = errorMessage;
+                    document.getElementById('coordinatesInfo').style.background = '#f8d7da';
+                    document.getElementById('coordinatesInfo').style.color = '#721c24';
+                },
+                {
+                    enableHighAccuracy: true,
+                    timeout: 10000,
+                    maximumAge: 60000
+                }
+            );
+        }
+
+        function resetForm() {
+            const form = document.getElementById('addForm');
+            if (form) form.reset();
+            
+            document.getElementById('coordinatesInfo').textContent = 'Clique em "Clicar no Mapa" e depois clique no mapa para selecionar a localização';
+            document.getElementById('coordinatesInfo').style.background = '#e9ecef';
+            document.getElementById('coordinatesInfo').style.color = '#333';
+            
+            if (modalSelectionMarker) {
+                modalMap.removeLayer(modalSelectionMarker);
+                modalSelectionMarker = null;
+            }
+            
+            // Resetar visualização de arquivo
+            document.getElementById('fileName').textContent = 'Nenhum arquivo selecionado';
+            document.getElementById('imagePreview').style.display = 'none';
+            document.getElementById('imagePreview').src = '';
+            
+            disableMapSelection();
+        }
+
+        // Manipular envio do formulário
+        document.getElementById('addForm').addEventListener('submit', async function(e) {
+            e.preventDefault();
+            
+            // Verificar se o usuário está logado
+            if (!isUserLoggedIn()) {
+                alert('Você precisa estar logado para adicionar um ponto.');
+                window.location.href = 'login.html';
+                return;
+            }
+            
+            const formData = new FormData(this);
+            const itemName = formData.get('itemName');
+            const itemType = formData.get('itemType');
+            const itemPeriod = formData.get('itemPeriod');
+            const itemLat = formData.get('itemLat');
+            const itemLng = formData.get('itemLng');
+            
+            // Validação básica
+            if (!itemName || !itemType || !itemPeriod || !itemLat || !itemLng) {
+                alert('Por favor, preencha todos os campos obrigatórios (*)');
+                return;
+            }
+            
+            // Validação de coordenadas
+            const lat = parseFloat(itemLat);
+            const lng = parseFloat(itemLng);
+            if (lat < -90 || lat > 90 || lng < -180 || lng > 180) {
+                alert('Por favor, insira coordenadas válidas:\nLatitude: -90 a 90\nLongitude: -180 a 180');
+                return;
+            }
+            
+            let imageUrl = 'https://via.placeholder.com/300x200/2c5530/ffffff?text=Imagem+Não+Disponível';
+            
+            // Se foi selecionado um arquivo, usar data URL
+            const fileInput = document.getElementById('itemImageFile');
+            if (imageSourceType === 'file' && fileInput.files && fileInput.files[0]) {
+                const arquivo = fileInput.files[0];
+                
+                // Mostrar loading
+                const submitBtn = document.getElementById('submitBtn');
+                const originalText = submitBtn.innerHTML;
+                submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Processando imagem...';
+                submitBtn.disabled = true;
+                
+                try {
+                    // Usar FileReader para converter para data URL
+                    const reader = new FileReader();
+                    imageUrl = await new Promise((resolve) => {
+                        reader.onload = function(e) {
+                            resolve(e.target.result);
+                        };
+                        reader.readAsDataURL(arquivo);
+                    });
+                    
+                    console.log('✅ Usando imagem do arquivo');
+                } catch (error) {
+                    console.error('❌ Erro ao processar imagem:', error);
+                    showNotification('Erro ao processar imagem. Usando imagem padrão.', 'error');
+                } finally {
+                    // Restaurar botão
+                    submitBtn.innerHTML = originalText;
+                    submitBtn.disabled = false;
+                }
+            } else if (imageSourceType === 'url') {
+                // Usar URL se for essa a opção
+                imageUrl = document.getElementById('itemImageUrl').value || imageUrl;
+                console.log('🔗 Usando URL da imagem:', imageUrl);
+            }
+            
+            // Criar o novo site
+            const newSite = {
+                id: 'user-' + Date.now(),
+                name: itemName,
+                type: itemType,
+                period: itemPeriod,
+                coords: [lat, lng],
+                description: document.getElementById('itemDescription').value,
+                image: imageUrl,
+                siteUrl: document.getElementById('itemSiteUrl').value,
+                status: 'Adicionado pelo Usuário',
+                artifacts: Math.floor(Math.random() * 200) + 50,
+                color: getColorByType(itemType),
+                timestamp: new Date().toISOString()
+            };
+
+            addSiteToMap(newSite);
+            closeAddModal();
+            this.reset();
+            
+            // Resetar visualização
+            document.getElementById('fileName').textContent = 'Nenhum arquivo selecionado';
+            document.getElementById('imagePreview').style.display = 'none';
+            document.getElementById('imagePreview').src = '';
+            
+            showNotification('Sítio adicionado com sucesso!', 'success');
+        });
+
+        function getColorByType(type) {
+            const colorMap = {
+                'Sítio em Escavação': '#ff0400',
+                'Sítio Documentado': '#0022ff',
+                'Área Protegida': '#00ff0d',
+                'Artefato Registrado': '#ffb52c',
+                'Estrutura Arqueológica': '#c800ff',
+                'Museus Arqueológicos': '#ffff00'
+            };
+            return colorMap[type] || '#666666';
+        }
+
+        function addSiteToMap(site) {
+            if (!map) {
+                console.error('Mapa não inicializado');
+                return;
+            }
+
+            const marker = L.circleMarker(site.coords, {
+                radius: 8 + (site.artifacts / 100),
+                fillColor: site.color,
+                color: '#fff',
+                weight: 2,
+                opacity: 1,
+                fillOpacity: 0.8
+            }).addTo(map);
+
+            // Armazenar referência ao marcador
+            currentMarkers.push(marker);
+
+            let buttonHtml = '';
+            if (site.siteUrl) {
+                buttonHtml = `<button class="site-link-button" onclick="window.open('${site.siteUrl}', '_blank')">Visitar Site</button>`;
+            }
+
+            const popupContent = `
+                <div class="map-popup">
+                    <h2>${site.name}</h2>
+                    <img src="${site.image}" alt="${site.name}" onerror="this.src='https://via.placeholder.com/300x200/2c5530/ffffff?text=Imagem+Não+Disponível'">
+                    <div class="popup-meta">
+                        <p><strong>Tipo:</strong> ${site.type}</p>
+                        <p><strong>Período:</strong> ${site.period}</p>
+                        <p><strong>Artefatos:</strong> ${site.artifacts}</p>
+                        <p><strong>Status:</strong> ${site.status}</p>
+                        <p><strong>Descrição:</strong> ${site.description}</p>
+                        ${buttonHtml}
+                    </div>
+                </div>
+            `;
+
+            marker.bindPopup(popupContent);
+            
+            // Abrir popup automaticamente quando adicionado
+            marker.openPopup();
+
+            // Adicionar à lista de sites do usuário
+            userAddedSites.push(site);
+            localStorage.setItem('userAddedSites', JSON.stringify(userAddedSites));
+
+            return site;
+        }
+
+        function addUserSitesToMap() {
+            userAddedSites.forEach(site => {
+                addSiteToMap(site);
+            });
+        }
+
+        function addSitesToMap() {
+            sites.forEach(site => {
+                const marker = L.circleMarker(site.coords, {
+                    radius: 8 + (site.artifacts / 100),
+                    fillColor: site.color,
+                    color: '#fff',
+                    weight: 2,
+                    opacity: 1,
+                    fillOpacity: 0.8
+                }).addTo(map);
+
+                // Armazenar referência ao marcador
+                currentMarkers.push(marker);
+
+                let buttonHtml = '';
+                if (site.siteUrl) {
+                    buttonHtml = `<button class="site-link-button" onclick="window.open('${site.siteUrl}', '_blank')">Visitar Site</button>`;
+                }
+
+                marker.bindPopup(`
+                    <div class="map-popup">
+                        <h2>${site.name}</h2>
+                        <img src="${site.image}" alt="${site.name}" onerror="this.src='https://via.placeholder.com/300x200/2c5530/ffffff?text=Imagem+Não+Disponível'">
+                        <div class="popup-meta">
+                            <p><strong>Tipo:</strong> ${site.type}</p>
+                            <p><strong>Período:</strong> ${site.period}</p>
+                            <p><strong>Artefatos:</strong> ${site.artifacts}</p>
+                            <p><strong>Status:</strong> ${site.status}</p>
+                            ${site.description ? `<p><strong>Descrição:</strong> ${site.description}</p>` : ''}
+                            ${buttonHtml}
+                        </div>
+                    </div>
+                `);
+            });
+        }
+
+        // Outras funções
+        function toggleLegend() {
+            const legend = document.getElementById('legendContent');
+            const button = document.querySelector('.toggle-button');
+            if (legend.style.display === 'none') {
+                legend.style.display = 'block';
+                button.textContent = '–';
+            } else {
+                legend.style.display = 'none';
+                button.textContent = '+';
+            }
+        }
+
+        // Verificar se o usuário está logado
+        function isUserLoggedIn() {
+            const user = localStorage.getItem('archaeologyUser') || sessionStorage.getItem('archaeologyUser');
+            return user !== null;
+        }
+
+        // Verificar se o usuário está logado e atualizar interface
+        function checkUserLogin() {
+            const user = localStorage.getItem('archaeologyUser') || sessionStorage.getItem('archaeologyUser');
+            const addButtonContainer = document.getElementById('addButtonContainer');
+            const loginButtonContainer = document.getElementById('loginButtonContainer');
+            
+            if (user) {
+                // Usuário está logado
+                const userData = JSON.parse(user);
+                
+                // Mostrar botão "Adicionar" e informações do usuário
+                addButtonContainer.innerHTML = `
+                    <div style="display: flex; align-items: center; gap: 10px;">
+                        <span style="color: white; font-size: 14px;">Olá, ${userData.name}</span>
+                        <button class="add-btn" onclick="openAddModal()">
+                            <i class="fas fa-plus"></i> Adicionar
+                        </button>
+                    </div>
+                `;
+                
+                // Mostrar botão de logout
+                loginButtonContainer.innerHTML = `
+                    <button class="logout-btn" onclick="logout()">
+                        <i class="fas fa-sign-out-alt"></i> Sair
+                    </button>
+                `;
+            } else {
+                // Usuário não está logado
+                addButtonContainer.innerHTML = '';
+                loginButtonContainer.innerHTML = `
+                    <a href="login.html" class="cta-button">Login</a>
+                `;
+            }
+        }
+
+        // Função de logout
+        function logout() {
+            localStorage.removeItem('archaeologyUser');
+            sessionStorage.removeItem('archaeologyUser');
+            checkUserLogin(); // Atualizar a interface
+            alert('Logout realizado com sucesso!');
+        }
+
+        // Inicializar o mapa quando a página carregar
+        document.addEventListener('DOMContentLoaded', function() {
+            initializeMap();
+            checkUserLogin(); // Verificar login ao carregar a página
+            
+            // Smooth scroll para links âncora
+            document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+                anchor.addEventListener('click', function(e) {
+                    e.preventDefault();
+                    const targetId = this.getAttribute('href');
+                    if (targetId === '#') return;
+                    const targetElement = document.querySelector(targetId);
+                    if (targetElement) {
+                        window.scrollTo({
+                            top: targetElement.offsetTop - 80,
+                            behavior: 'smooth'
+                        });
+                    }
+                });
+            });
+
+            // Fechar modal ao clicar fora
+            document.getElementById('addModal').addEventListener('click', function(e) {
+                if (e.target === this) {
+                    closeAddModal();
+                }
+            });
+
+            // Atualizar coordenadas manualmente quando os campos mudam
+            document.getElementById('itemLat').addEventListener('change', updateMarkerFromCoordinates);
+            document.getElementById('itemLng').addEventListener('change', updateMarkerFromCoordinates);
+        });
+
+        function updateMarkerFromCoordinates() {
+            const lat = parseFloat(document.getElementById('itemLat').value);
+            const lng = parseFloat(document.getElementById('itemLng').value);
+            
+            if (!isNaN(lat) && !isNaN(lng) && modalMap) {
+                // Atualizar informações
+                document.getElementById('coordinatesInfo').textContent = `Localização: ${lat.toFixed(6)}, ${lng.toFixed(6)}`;
+                document.getElementById('coordinatesInfo').style.background = '#d1ecf1';
+                document.getElementById('coordinatesInfo').style.color = '#0c5460';
+                
+                // Adicionar/atualizar marcador no mapa do modal
+                if (modalSelectionMarker) {
+                    modalMap.removeLayer(modalSelectionMarker);
+                }
+                
+                modalSelectionMarker = L.marker([lat, lng], {
+                    icon: L.divIcon({
+                        className: 'selection-marker',
+                        html: '<div class="marker-pin selection"></div><i class="fas fa-map-marker-alt"></i>',
+                        iconSize: [30, 42],
+                        iconAnchor: [15, 42]
+                    })
+                }).addTo(modalMap);
+                
+                // Centralizar mapa na localização
+                modalMap.setView([lat, lng], Math.max(modalMap.getZoom(), 10));
+            }
+        }
+
+        // Função global para ir para site
+        function irParaSite() {
+            window.location.href = "https://mab.unasp.edu.br/";
+        }
+    </script>
+</body>
+</html>
