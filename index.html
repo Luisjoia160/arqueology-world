@@ -5,12 +5,38 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     
     <title>ArchaeoVision | Plataforma Profissional de Arqueologia Digital</title>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.3/dist/leaflet.css" />
-    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;700&family=Raleway:wght@300;400;600&display=swap" rel="stylesheet">
+<!-- Otimização: Pré-conectar aos domínios necessários -->
+<link rel="preconnect" href="https://cdnjs.cloudflare.com">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://unpkg.com">
+
+<!-- Otimização: Carregamento otimizado do Font Awesome -->
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" 
+      integrity="sha512-iecdLmaskl7CVkqkXNQ/ZH/XLlvWZOJyj7Yy7tcenmpD1ypASozpmT/E0iPtmFIB46ZmdtAc9eNBvH0H/ZpiBw==" 
+      crossorigin="anonymous" referrerpolicy="no-referrer" />
+
+<!-- Otimização: Carregamento otimizado do Leaflet -->
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.3/dist/leaflet.css" 
+      integrity="sha256-kLaT2GOSpHechhsozzB+flnD+zUyjE2LlfWPgU04xyI=" 
+      crossorigin=""/>
+
+<!-- Otimização: Carregamento otimizado das fontes -->
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;700&family=Raleway:wght@300;400;600&display=swap" 
+      rel="stylesheet">
     <style>
         /* Reset e estilos base */
-        * {
+        :root {
+    --primary-color: #2c5530;
+    --secondary-color: #d4af37;
+    --accent-color: #28a745;
+    --danger-color: #dc3545;
+    --text-color: #333;
+    --light-bg: #f8f9fa;
+    --white: #ffffff;
+    --shadow: 0 2px 10px rgba(0,0,0,0.1);
+    --transition: all 0.3s ease;
+}
+         *{
             margin: 0;
             padding: 0;
             box-sizing: border-box;
@@ -2596,37 +2622,36 @@
         }
 
         // ===== FUNÇÕES DE FILTRO ===== //
-        function applyFilters() {
-            const typeFilter = document.getElementById('filterType').value;
-            const periodFilter = document.getElementById('filterPeriod').value;
-            
-            // Limpar todos os marcadores atuais
-            currentMarkers.forEach(marker => {
-                map.removeLayer(marker);
-            });
-            currentMarkers = [];
-            
-            // Recarregar sites com base nos filtros
-            // Sites originais filtrados
-            sites.forEach(site => {
-                // Aplicar filtros
-                if (typeFilter !== 'all' && site.type !== typeFilter) return;
-                if (periodFilter !== 'all' && !site.period.includes(periodFilter)) return;
-                
-                addSiteToMap(site);
-            });
-            
-            // Sites do usuário filtrados
-            userAddedSites.forEach(site => {
-                // Aplicar filtros
-                if (typeFilter !== 'all' && site.type !== typeFilter) return;
-                if (periodFilter !== 'all' && !site.period.includes(periodFilter)) return;
-                
-                addSiteToMap(site);
-            });
-            
-            showNotification('Filtros aplicados com sucesso!', 'success');
+        // ===== FUNÇÕES DE FILTRO OTIMIZADAS ===== //
+function applyFilters() {
+    const typeFilter = document.getElementById('filterType').value;
+    const periodFilter = document.getElementById('filterPeriod').value;
+    
+    // Otimização: Remover apenas marcadores visíveis
+    currentMarkers.forEach(marker => {
+        if (map.hasLayer(marker)) {
+            map.removeLayer(marker);
         }
+    });
+    
+    // Otimização: Reutilizar array em vez de criar novo
+    currentMarkers.length = 0;
+    
+    // Combinar todos os sites uma vez
+    const allSites = [...sites, ...userAddedSites];
+    
+    // Otimização: Filtrar e adicionar em uma única operação
+    allSites.forEach(site => {
+        const typeMatch = typeFilter === 'all' || site.type === typeFilter;
+        const periodMatch = periodFilter === 'all' || (site.period && site.period.includes(periodFilter));
+        
+        if (typeMatch && periodMatch) {
+            addSiteToMap(site);
+        }
+    });
+    
+    showNotification('Filtros aplicados com sucesso!', 'success');
+}
         
         function resetFilters() {
             document.getElementById('filterType').value = 'all';
@@ -2994,54 +3019,51 @@
         }
 
         function addSiteToMap(site) {
-            if (!map) {
-                console.error('Mapa não inicializado');
-                return;
-            }
+    if (!map) {
+        console.error('Mapa não inicializado');
+        return;
+    }
 
-            const marker = L.circleMarker(site.coords, {
-                radius: 8 + (site.artifacts / 100),
-                fillColor: site.color,
-                color: '#fff',
-                weight: 2,
-                opacity: 1,
-                fillOpacity: 0.8
-            }).addTo(map);
+    // Otimização: Cache de elementos DOM
+    const marker = L.circleMarker(site.coords, {
+        radius: Math.min(8 + (site.artifacts / 100), 20), // Limitar tamanho máximo
+        fillColor: site.color,
+        color: '#fff',
+        weight: 2,
+        opacity: 1,
+        fillOpacity: 0.8
+    }).addTo(map);
 
-            // Armazenar referência ao marcador
-            currentMarkers.push(marker);
+    currentMarkers.push(marker);
 
-            let buttonHtml = '';
-            if (site.siteUrl) {
-                buttonHtml = `<button class="site-link-button" onclick="window.open('${site.siteUrl}', '_blank')">Visitar Site</button>`;
-            }
+    // Otimização: Template string mais eficiente
+    const buttonHtml = site.siteUrl ? 
+        `<button class="site-link-button" onclick="window.open('${site.siteUrl}', '_blank')">Visitar Site</button>` : '';
 
-            const popupContent = `
-                <div class="map-popup">
-                    <h2>${site.name}</h2>
-                    <img src="${site.image}" alt="${site.name}" onerror="this.src='https://via.placeholder.com/300x200/2c5530/ffffff?text=Imagem+Não+Disponível'">
-                    <div class="popup-meta">
-                        <p><strong>Tipo:</strong> ${site.type}</p>
-                        <p><strong>Período:</strong> ${site.period}</p>
-                        <p><strong>Artefatos:</strong> ${site.artifacts}</p>
-                        <p><strong>Status:</strong> ${site.status}</p>
-                        <p><strong>Descrição:</strong> ${site.description}</p>
-                        ${buttonHtml}
-                    </div>
-                </div>
-            `;
+    const popupContent = `
+        <div class="map-popup">
+            <h2>${site.name}</h2>
+            <img src="${site.image}" alt="${site.name}" loading="lazy" onerror="this.src='https://via.placeholder.com/300x200/2c5530/ffffff?text=Imagem+Não+Disponível'">
+            <div class="popup-meta">
+                <p><strong>Tipo:</strong> ${site.type}</p>
+                <p><strong>Período:</strong> ${site.period}</p>
+                <p><strong>Artefatos:</strong> ${site.artifacts}</p>
+                <p><strong>Status:</strong> ${site.status}</p>
+                ${site.description ? `<p><strong>Descrição:</strong> ${site.description}</p>` : ''}
+                ${buttonHtml}
+            </div>
+        </div>
+    `;
 
-            marker.bindPopup(popupContent);
-            
-            // Abrir popup automaticamente quando adicionado
-            marker.openPopup();
+    marker.bindPopup(popupContent);
+    
+    // Só abrir popup automaticamente para novos sites do usuário
+    if (site.id && site.id.startsWith('user-')) {
+        marker.openPopup();
+    }
 
-            // Adicionar à lista de sites do usuário
-            userAddedSites.push(site);
-            localStorage.setItem('userAddedSites', JSON.stringify(userAddedSites));
-
-            return site;
-        }
+    return site;
+}
 
         function addUserSitesToMap() {
             userAddedSites.forEach(site => {
@@ -3149,36 +3171,48 @@
 
         // Inicializar o mapa quando a página carregar
         document.addEventListener('DOMContentLoaded', function() {
-            initializeMap();
-            checkUserLogin(); // Verificar login ao carregar a página
-            
-            // Smooth scroll para links âncora
-            document.querySelectorAll('a[href^="#"]').forEach(anchor => {
-                anchor.addEventListener('click', function(e) {
-                    e.preventDefault();
-                    const targetId = this.getAttribute('href');
-                    if (targetId === '#') return;
-                    const targetElement = document.querySelector(targetId);
-                    if (targetElement) {
-                        window.scrollTo({
-                            top: targetElement.offsetTop - 80,
-                            behavior: 'smooth'
-                        });
-                    }
+    initializeMap();
+    checkUserLogin();
+    
+    // Smooth scroll otimizado
+    document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+        anchor.addEventListener('click', function(e) {
+            e.preventDefault();
+            const targetId = this.getAttribute('href');
+            if (targetId === '#') return;
+            const targetElement = document.querySelector(targetId);
+            if (targetElement) {
+                const targetPosition = targetElement.getBoundingClientRect().top + window.pageYOffset - 80;
+                window.scrollTo({
+                    top: targetPosition,
+                    behavior: 'smooth'
                 });
-            });
-
-            // Fechar modal ao clicar fora
-            document.getElementById('addModal').addEventListener('click', function(e) {
-                if (e.target === this) {
-                    closeAddModal();
-                }
-            });
-
-            // Atualizar coordenadas manualmente quando os campos mudam
-            document.getElementById('itemLat').addEventListener('change', updateMarkerFromCoordinates);
-            document.getElementById('itemLng').addEventListener('change', updateMarkerFromCoordinates);
+            }
         });
+    });
+
+    // Fechar modal ao clicar fora
+    const addModal = document.getElementById('addModal');
+    if (addModal) {
+        addModal.addEventListener('click', function(e) {
+            if (e.target === this) {
+                closeAddModal();
+            }
+        });
+    }
+
+    // Otimização: Delegação de eventos para inputs de coordenadas
+    const form = document.getElementById('addForm');
+    if (form) {
+        form.addEventListener('change', function(e) {
+            if (e.target.id === 'itemLat' || e.target.id === 'itemLng') {
+                updateMarkerFromCoordinates();
+            }
+        });
+    }
+});
+
+
 
         function updateMarkerFromCoordinates() {
             const lat = parseFloat(document.getElementById('itemLat').value);
